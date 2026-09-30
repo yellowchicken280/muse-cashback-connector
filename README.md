@@ -15,13 +15,24 @@ Meta's Muse is becoming a shopping agent. Every purchase it makes on your behalf
 
 The full chain was validated live on Macy's on 2026-09-30: Rakuten interstitial → LinkShare redirect → merchant landing with affiliate params intact. Details in `references/validated-flow.md`.
 
+## Connector (installable)
+
+The `connector/` folder is a real Muse custom connector — no Meta review needed:
+
+- **`openapi.json`** — OpenAPI 3.0.3 spec for the trip-ledger API
+- **`llms.txt`** — plain-spoken workflow rules Muse reads on setup
+- **`server.py`** — stdlib-only Python service (no dependencies) that serves the API plus the spec files
+- **`CONNECT.md`** — deploy + setup guide
+
+The API is a **trip ledger**: it records every purchase where cashback attribution was armed (merchant, activated rate, order ref). It's your private record of what the agent did — it does not reflect Rakuten's records and never confirms cashback was credited. See `connector/CONNECT.md` to deploy it and tell Muse to build the connector from your `/openapi.json` URL.
+
 ## The rate-transparency catch
 
 During testing I found that Rakuten's homepage advertised **10%** cash back at Macy's, but the activation interstitial showed **2% activated**. The connector always surfaces the **activated** rate — the one shown immediately before redirection — and flags any mismatch. Never trust the homepage rate.
 
 ## Setup
 
-1. Add this folder as a custom connector in Muse (unlisted — no review needed).
+1. Deploy the connector service and add it as a custom connector in Muse — see `connector/CONNECT.md` (unlisted, no review needed). Or just use the `SKILL.md` workflow directly.
 2. Sign into your Rakuten account once in Muse's browser.
 3. Shop. Before each purchase, Muse reports the merchant, the activated rate, and confirms attribution is armed.
 

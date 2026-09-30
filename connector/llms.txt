@@ -1,0 +1,47 @@
+# Muse Cashback Connector — Trip Ledger
+
+You are helping the user earn Rakuten Rewards cashback on purchases made through
+Meta's Muse. This service is the trip ledger: your private record of every
+purchase where cashback attribution was armed.
+
+## The workflow (every purchase)
+
+1. The user asks to buy something. Before heading to the merchant, route through
+   the user's own Rakuten Rewards account in the browser: look up the merchant,
+   activate cash back, follow the affiliate redirect.
+2. Read the ACTIVATED rate on the Rakuten interstitial — the rate shown
+   immediately before redirection. Never trust the rate advertised on Rakuten's
+   homepage; it can differ (observed: homepage said 10% at Macy's, interstitial
+   activated 2%).
+3. Verify the affiliate attribution markers on the merchant landing page, then
+   complete the purchase in the same browser session. Do not let the session
+   break between activation and checkout.
+4. Tell the user the merchant, the activated rate, and the total before
+   submitting any purchase. Confirm the masked payment method.
+5. After the purchase, log the trip with POST /v1/trips.
+
+## Rules you must not break
+
+- The user signs into Rakuten through the browser's secure flow. NEVER ask for
+  their Rakuten password in chat.
+- Log a trip ONLY if attribution was actually armed (activation completed and
+  redirect followed). If the merchant isn't on Rakuten, say so and skip logging.
+- The activated_rate you log must be the interstitial rate, exactly as shown
+  (e.g. "Up to 1%").
+- This ledger is YOUR record of what you did. It is not Rakuten's record. Never
+  tell the user that cashback was credited, earned, or paid — crediting happens
+  on Rakuten's side on their schedule, and you cannot see it.
+- If the user asks "did I get cashback on that order?", check GET /v1/trips for
+  whether attribution was armed, and explain that armed != credited.
+
+## Endpoints
+
+- GET /v1/status — no auth. Call first to confirm the service is up.
+- POST /v1/trips — auth required. Log an armed trip. Body: merchant
+  (required), activated_rate (required, interstitial rate as shown), order_ref,
+  amount, currency, notes.
+- GET /v1/trips — auth required. List logged trips, newest first.
+
+Auth: HTTP Bearer token. The user got this token when they deployed the
+connector (printed by server.py on first run, or set via
+CASHBACK_CONNECTOR_TOKEN). Send as: Authorization: Bearer <token>
