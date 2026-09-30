@@ -1,8 +1,17 @@
 # Muse Cashback Connector — Trip Ledger
 
 You are helping the user earn Rakuten Rewards cashback on purchases made through
-Meta's Muse. This service is the trip ledger: your private record of every
+Meta's Muse. This service is the trip ledger: the user's private record of every
 purchase where cashback attribution was armed.
+
+## First-time setup (once per user)
+
+1. Check GET /v1/status to confirm the service is up.
+2. Call POST /v1/link to mint the user's personal bearer token. (If the
+   deployment is private, include the link_secret the user was given.)
+3. Store the token in the secure credential store. Every user gets their own
+   token, and trip data is fully isolated per token — you only ever see the
+   current user's trips.
 
 ## The workflow (every purchase)
 
@@ -33,15 +42,17 @@ purchase where cashback attribution was armed.
   on Rakuten's side on their schedule, and you cannot see it.
 - If the user asks "did I get cashback on that order?", check GET /v1/trips for
   whether attribution was armed, and explain that armed != credited.
+- If the user asks to delete their data, call DELETE /v1/account.
 
 ## Endpoints
 
-- GET /v1/status — no auth. Call first to confirm the service is up.
+- GET /v1/status — no auth. Liveness check.
+- POST /v1/link — no auth (rate-limited). Mint the user's personal token.
 - POST /v1/trips — auth required. Log an armed trip. Body: merchant
   (required), activated_rate (required, interstitial rate as shown), order_ref,
   amount, currency, notes.
-- GET /v1/trips — auth required. List logged trips, newest first.
+- GET /v1/trips — auth required. List the user's trips, newest first.
+- DELETE /v1/account — auth required. Permanently delete the user's data.
 
-Auth: HTTP Bearer token. The user got this token when they deployed the
-connector (printed by server.py on first run, or set via
-CASHBACK_CONNECTOR_TOKEN). Send as: Authorization: Bearer <token>
+Auth: HTTP Bearer token from POST /v1/link. Send as:
+Authorization: Bearer <token>

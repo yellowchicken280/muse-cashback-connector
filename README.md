@@ -24,7 +24,7 @@ The `connector/` folder is a real Muse custom connector — no Meta review neede
 - **`server.py`** — stdlib-only Python service (no dependencies) that serves the API plus the spec files
 - **`CONNECT.md`** — deploy + setup guide
 
-The API is a **trip ledger**: it records every purchase where cashback attribution was armed (merchant, activated rate, order ref). It's your private record of what the agent did — it does not reflect Rakuten's records and never confirms cashback was credited. See `connector/CONNECT.md` to deploy it and tell Muse to build the connector from your `/openapi.json` URL.
+The API is a **trip ledger**: it records every purchase where cashback attribution was armed (merchant, activated rate, order ref). Each user mints their own token via `POST /v1/link` — data is fully isolated per user, and only token hashes are stored. It's your private record of what the agent did — it does not reflect Rakuten's records and never confirms cashback was credited. See `connector/CONNECT.md` to deploy it (Docker or plain Python) and tell Muse to build the connector from your `/openapi.json` URL.
 
 ## The rate-transparency catch
 
