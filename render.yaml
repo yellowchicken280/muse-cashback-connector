@@ -1,0 +1,17 @@
+# Render one-click deploy for the Muse cashback connector.
+# In Render: New -> Blueprint -> select this repo. Render sets $PORT automatically;
+# the server binds 0.0.0.0:$PORT. Free tier disk is ephemeral, so the trip ledger
+# resets on redeploy/restart — fine for personal use; add a persistent disk later
+# if you want trips to survive deploys.
+services:
+  - type: web
+    name: muse-cashback-connector
+    runtime: docker
+    plan: free
+    healthCheckPath: /openapi.json
+    envVars:
+      - key: CASHBACK_DATA_DIR
+        value: /app/data
+      # Optional: uncomment to require a secret for minting new user tokens.
+      # - key: CASHBACK_LINK_SECRET
+      #   sync: false
