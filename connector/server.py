@@ -173,6 +173,14 @@ class Handler(BaseHTTPRequestHandler):
             return None, "invalid JSON"
 
     def _client_ip(self):
+        # Behind Render's (or any) reverse proxy the socket peer is the proxy
+        # itself, so every user would share one rate-limit bucket. Honor the
+        # client IP the trusted proxy appends to X-Forwarded-For: the last
+        # entry is the one the proxy added, so a client-supplied spoofed
+        # entry to its left can't be selected.
+        xff = self.headers.get("X-Forwarded-For", "")
+        if xff:
+            return xff.split(",")[-1].strip()
         return self.client_address[0]
 
     def _auth_user(self):
